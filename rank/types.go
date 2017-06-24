@@ -23,7 +23,7 @@ type rankData struct {
   CalcAt      time.Time
   UserRows    []userRow
   ContestInfo *data.Contest
-  UserMap     map[uint]uint
+  UserMap     map[uint]uint `json:"-"`
   ProblemMap  map[uint]uint
 }
 

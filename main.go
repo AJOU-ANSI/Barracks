@@ -11,6 +11,8 @@ import (
   "Barracks/rank"
   "time"
   "Barracks/data"
+  "encoding/json"
+  "net/http"
 )
 
 var db *gorm.DB
@@ -57,7 +59,6 @@ func main() {
 
   lastId := uint(0)
   var submissions []data.Submission
-
   go func() {
   loop:
     for {
@@ -70,16 +71,7 @@ func main() {
         // set last not pending submissions
         if submissionsLen > 0 {
           lastId = submissions[submissionsLen-1].ID
-
-          go func() {
-            rank.AddSubmissions(&submissions)
-
-            for index, userRow := range rank.MyRankData.UserRows {
-              fmt.Println(index, userRow.Rank, userRow.AcceptedCnt, uint(userRow.Penalty))
-            }
-            fmt.Println("----------------------")
-          }()
-
+          rank.AddSubmissions(&submissions)
         }
       case <- doneChan:
         doneChan <- true
@@ -88,10 +80,12 @@ func main() {
     }
   }()
 
-  /*
-  GET MyRankData 요청
+  http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request){
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(rank.MyRankData)
+  })
+  http.ListenAndServe(":8080", nil)
 
-   */
 }
 
 /*
