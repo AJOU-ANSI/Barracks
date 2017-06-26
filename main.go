@@ -11,8 +11,9 @@ import (
   "Barracks/rank"
   "time"
   "Barracks/data"
-  "encoding/json"
   "net/http"
+  "github.com/labstack/echo"
+  "strconv"
 )
 
 var db *gorm.DB
@@ -80,16 +81,45 @@ func main() {
     }
   }()
 
-  http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request){
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(rank.MyRankData)
+  e := echo.New()
+  e.GET("/api/acceptedCnts/:userId", func(ctx echo.Context) error {
+    userId, err := strconv.Atoi(ctx.Param("userId"))
+    if err != nil {
+      return ctx.NoContent(http.StatusNotFound)
+    }
+    userRowRef := &rank.MyRankData.UserRows[rank.MyRankData.UserMap[uint(userId)]]
+    if userRowRef == nil {
+      return ctx.NoContent(http.StatusNotFound)
+    }
+    r := &struct {
+      AcceptedCnt uint `json:"acceptedCnt"`
+      Rank uint `json:"rank"`
+    }{
+      userRowRef.AcceptedCnt,
+      userRowRef.Rank,
+    }
+    return ctx.JSON(http.StatusOK, r)
   })
-  http.ListenAndServe(":8080", nil)
-
+  e.GET("/api/problemStatuses/:userId", func(ctx echo.Context) error {
+    userId, err := strconv.Atoi(ctx.Param("userId"))
+    if err != nil {
+      return ctx.NoContent(http.StatusNotFound)
+    }
+    userRowRef := &rank.MyRankData.UserRows[rank.MyRankData.UserMap[uint(userId)]]
+    if userRowRef == nil {
+      return ctx.NoContent(http.StatusNotFound)
+    }
+    type problemStatusElem struct {
+      ProblemId uint
+      Accepted  bool
+    }
+    r := &struct {
+      ProblemStatus []problemStatusElem
+    }{}
+    for key, val := range rank.MyRankData.ProblemMap {
+      r.ProblemStatus = append(r.ProblemStatus, problemStatusElem{key, userRowRef.ProblemStatuses[val].Accepted})
+    }
+    return ctx.JSON(http.StatusOK, r)
+  })
+  e.Logger.Fatal(e.Start(":8080"))
 }
-
-/*
-  - gorm (db orm)
-  - ginkgo, gomego (testing tool)
-  - echo (웹프레임워크
- */
