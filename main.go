@@ -13,6 +13,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"flag"
 )
 
 var db *gorm.DB
@@ -33,6 +34,16 @@ func askContestName() (contestName string) {
 }
 
 func main() {
+	contestNamePtr := flag.String("contest", "", "contest name")
+	portPtr := flag.Int("port", 8080, "port number")
+	flag.Parse()
+
+
+	if *contestNamePtr == "" {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
 	var err error
 
 	db, err = gorm.Open("mysql", data.DbConfig)
@@ -45,7 +56,7 @@ func main() {
 
 	defer db.Close()
 
-	contestName := askContestName()
+	contestName := *contestNamePtr
 
 	contest := service.SelectContestByName(db, &contestName)
 	users := service.SelectNormalUsersByContest(db, &contest)
@@ -56,5 +67,5 @@ func main() {
 
 	rank.InitData(&contest, &users, &problems)
 	poller.StartPoll(db, &tickDuration, &contest, &doneChan)
-	httpserver.StartServer(&contest, 8080)
+	httpserver.StartServer(&contest, uint(*portPtr))
 }
