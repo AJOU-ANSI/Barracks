@@ -45,7 +45,7 @@ func main() {
 
 	defer db.Close()
 
-	contestName := "shake16open"
+	contestName := askContestName()
 
 	contest := service.SelectContestByName(db, &contestName)
 	users := service.SelectNormalUsersByContest(db, &contest)
