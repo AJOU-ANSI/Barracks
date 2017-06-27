@@ -5,7 +5,7 @@ import (
   "Barracks/data"
 )
 
-func SelectNotCheckedSubmissions(db *gorm.DB, contest data.Contest, lastId uint) (submissions []data.Submission){
+func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint) (submissions []data.Submission){
   // find first pending submission
   var firstPendingSubmission data.Submission
   var lastSubmission data.Submission
