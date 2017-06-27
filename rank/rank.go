@@ -109,12 +109,18 @@ func (r RankInfo) AddSubmissions (submissions *[]data.Submission) {
 }
 
 func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemStatusSummary) {
-  userRowRef := &r.RankData.UserRows[r.RankData.UserMap[userId]]
+  mappedId, ok := r.RankData.UserMap[userId]
+  if !ok {
+    summary = nil
+    return
+  }
+  userRowRef := &r.RankData.UserRows[mappedId]
   summary = make([]problemStatusSummary, len(r.RankData.ProblemMap))
   idx := 0
   for key, val := range r.RankData.ProblemMap {
     summary[idx].ProblemId = key
     summary[idx].Accepted = userRowRef.ProblemStatuses[val].Accepted
+    idx++
   }
 
   return
@@ -122,8 +128,12 @@ func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemSt
 
 func (r RankInfo) GetUserSummary(userId uint) (summary *UserRankSummary) {
   summary = &UserRankSummary{}
-
-  userRowRef := &r.RankData.UserRows[r.RankData.UserMap[userId]]
+  mappedId, ok := r.RankData.UserMap[userId]
+  if !ok {
+    summary = nil
+    return
+  }
+  userRowRef := &r.RankData.UserRows[mappedId]
   summary.UserId = userId
   summary.AcceptedCnt = userRowRef.AcceptedCnt
   summary.Rank = userRowRef.Rank

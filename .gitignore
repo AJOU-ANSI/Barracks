@@ -19,3 +19,5 @@ vendor/
 config.go
 
 .idea/
+
+main
