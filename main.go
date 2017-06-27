@@ -36,20 +36,6 @@ func askContestName() (contestName string) {
 }
 
 func main() {
-  // just for http request
-  type problemStatusElem struct {
-    ProblemId uint `json:"problemId"`
-    Accepted  bool `json:"accepted"`
-  }
-
-  type standingRow struct {
-    UserId uint `json:"userId"`
-    AcceptedCnt uint `json:"acceptedCnt"`
-    Rank uint `json:"rank"`
-    ProblemStatus []problemStatusElem `json:"problemStatus"`
-  }
-  //
-
   var err error
 
   db, err = gorm.Open("mysql", data.DbConfig)
@@ -69,7 +55,7 @@ func main() {
   users := service.SelectNormalUsersByContest(db, &contest)
   problems := service.SelectProblemsByContest(db, &contest)
 
-  rank.InitData(&contest, &users, &problems)
+  rankInfo := rank.NewRankInfo(&contest, &users, &problems)
 
   tickerChan := time.NewTicker(tickDuration).C
   doneChan := make(chan bool)
@@ -88,33 +74,23 @@ func main() {
         // set last not pending submissions
         if submissionsLen > 0 {
           lastId = submissions[submissionsLen-1].ID
-          rank.AddSubmissions(&submissions)
-          var changes map[uint]*standingRow
-          var ret []*standingRow
+          rankInfo.AddSubmissions(&submissions)
+          var changes map[uint]bool
+          var ret struct{
+            Results []rank.UserRankSummary `json:"results"`
+          }
           for _, sub := range submissions {
             if _, present := changes[sub.UserID]; !present {
-              userRowRef := &rank.MyRankData.UserRows[rank.MyRankData.UserMap[sub.UserID]]
-              r := &standingRow{
-                UserId:      sub.UserID,
-                AcceptedCnt: userRowRef.AcceptedCnt,
-                Rank:        userRowRef.Rank,
-              }
-              for key, val := range rank.MyRankData.ProblemMap {
-                r.ProblemStatus = append(r.ProblemStatus,
-                  problemStatusElem{key, userRowRef.ProblemStatuses[val].Accepted})
-              }
-              changes[sub.UserID] = r
-              ret = append(ret, r)
+              changes[sub.UserID] = true
+              ret.Results = append(ret.Results, *rankInfo.GetUserSummary(sub.UserID))
             }
-            jsonValue, err := json.Marshal(ret)
-            if err != nil {
-              panic (err)
-            }
-            fmt.Println(jsonValue)
-            http.Post(("/api/"+contestName + "/submissions/checked"),"application/json",
-              bytes.NewReader(jsonValue))
-
           }
+          jsonValue, err := json.Marshal(ret)
+          if err != nil {
+            panic(err)
+          }
+          http.Post("/api/" + contestName + "/submissions/checked", "application/json",
+            bytes.NewReader(jsonValue))
         }
       case <- doneChan:
         doneChan <- true
@@ -129,18 +105,7 @@ func main() {
     if err != nil {
       return ctx.NoContent(http.StatusNotFound)
     }
-    val, ok := rank.MyRankData.UserMap[uint(userId)]
-    if !ok {
-      return ctx.NoContent(http.StatusNotFound)
-    }
-    userRowRef := &rank.MyRankData.UserRows[rank.MyRankData.UserMap[val]]
-    if userRowRef == nil {
-      return ctx.NoContent(http.StatusNotFound)
-    }
-    r := standingRow{
-      AcceptedCnt: userRowRef.AcceptedCnt,
-      Rank:        userRowRef.Rank,
-    }
+    r := rankInfo.GetUserSummary(uint(userId))
     return ctx.JSON(http.StatusOK, r)
   })
 
@@ -149,34 +114,8 @@ func main() {
     if err != nil {
       return ctx.NoContent(http.StatusNotFound)
     }
-    val, ok := rank.MyRankData.UserMap[uint(userId)]
-    if !ok {
-      return ctx.NoContent(http.StatusNotFound)
-    }
-    userRowRef := &rank.MyRankData.UserRows[rank.MyRankData.UserMap[val]]
-    if userRowRef == nil {
-      return ctx.NoContent(http.StatusNotFound)
-    }
-    r := standingRow{}
-    for key, val := range rank.MyRankData.ProblemMap {
-      r.ProblemStatus = append(r.ProblemStatus,
-        problemStatusElem{key, userRowRef.ProblemStatuses[val].Accepted})
-    }
+    r := rankInfo.GetUserSummary(uint(userId))
     return ctx.JSON(http.StatusOK, r)
-  })
-  e.POST("/api/:contestName/submissions/checked", func(ctx echo.Context) error {
-    var r []standingRow
-    if err := ctx.Bind(r); err != nil {
-      return err
-    }
-    fmt.Println("POST")
-    for idx, val := range r {
-      fmt.Println(idx)
-      fmt.Println(val.Rank)
-      fmt.Println(val.AcceptedCnt)
-      fmt.Println(val.UserId)
-    }
-    return ctx.NoContent(http.StatusOK)
   })
   e.Logger.Fatal(e.Start(":8080"))
 }

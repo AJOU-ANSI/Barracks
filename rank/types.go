@@ -5,6 +5,18 @@ import (
   "Barracks/data"
 )
 
+type problemStatusSummary struct {
+  ProblemId uint `json:"problemId"`
+  Accepted  bool `json:"accepted"`
+}
+
+type UserRankSummary struct {
+  UserId uint `json:"userId"`
+  Rank uint `json:"rank"`
+  AcceptedCnt uint `json:"acceptedCnt"`
+  ProblemStatus []problemStatusSummary `json:"problemStatus,omitempty"`
+}
+
 type problemStatus struct {
   WrongCount      uint
   Status          string

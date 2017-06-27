@@ -6,6 +6,11 @@ import (
   "container/heap"
 )
 
+type RankInfo struct {
+  RankData *rankData
+  RankHeap *rankHeap
+}
+
 func newUserRow (user *data.User, problems *[]data.Problem) (userRow userRow) {
   userRow.Rank = 1
   userRow.StrId = (*user).StrId
@@ -36,49 +41,49 @@ func newRankData (contest *data.Contest, users *[]data.User, problems *[]data.Pr
   return
 }
 
-var MyRankData *rankData
-var RankHeap *rankHeap
+func NewRankInfo (contest *data.Contest, users *[]data.User, problems *[]data.Problem) (r *RankInfo){
+  r = &RankInfo{}
+  r.RankData = newRankData(contest, users, problems)
 
-func InitData (contest *data.Contest, users *[]data.User, problems *[]data.Problem) {
-  MyRankData = newRankData(contest, users, problems)
+  r.RankHeap = &rankHeap{}
+  heap.Init(r.RankHeap)
 
-  RankHeap = &rankHeap{}
-  heap.Init(RankHeap)
+  return
 }
 
-func calcRanks() {
-  for index, userRow := range MyRankData.UserRows {
-    heap.Push(RankHeap, rankNode{Penalty: userRow.Penalty, AcceptedCnt: userRow.AcceptedCnt, UserIndex: uint(index)})
+func (r RankInfo) calcRanks() {
+  for index, userRow := range r.RankData.UserRows {
+    heap.Push(r.RankHeap, rankNode{Penalty: userRow.Penalty, AcceptedCnt: userRow.AcceptedCnt, UserIndex: uint(index)})
   }
 
   rankValue := uint(1)
   var beforeRankNode *rankNode
 
-  for RankHeap.Len() > 0 {
-    popRankNode := rankNode(heap.Pop(RankHeap).(rankNode))
+  for r.RankHeap.Len() > 0 {
+    popRankNode := rankNode(heap.Pop(r.RankHeap).(rankNode))
 
     if beforeRankNode != nil && (beforeRankNode.AcceptedCnt != popRankNode.AcceptedCnt || beforeRankNode.Penalty != popRankNode.Penalty) {
       rankValue++
     }
 
-    MyRankData.UserRows[popRankNode.UserIndex].Rank = rankValue
+    r.RankData.UserRows[popRankNode.UserIndex].Rank = rankValue
     beforeRankNode = &popRankNode
   }
 }
 
-func analyzeSubmissions(submissions *[]data.Submission) {
-  contestInfo := MyRankData.ContestInfo
+func (r RankInfo) analyzeSubmissions(submissions *[]data.Submission) {
+  contestInfo := r.RankData.ContestInfo
 
   // 각각의 제출에 대하여
   for _, submission := range *submissions {
     // userRow와 problemStatus를 구한다.
 
-    if _, ok := MyRankData.UserMap[submission.UserID]; !ok {
+    if _, ok := r.RankData.UserMap[submission.UserID]; !ok {
       continue
     }
 
-    userRow := &MyRankData.UserRows[MyRankData.UserMap[submission.UserID]]
-    problemStatus := &userRow.ProblemStatuses[MyRankData.ProblemMap[submission.ProblemID]]
+    userRow := &r.RankData.UserRows[r.RankData.UserMap[submission.UserID]]
+    problemStatus := &userRow.ProblemStatuses[r.RankData.ProblemMap[submission.ProblemID]]
 
     // 만약 제출이 정답 소스코드라면
     if data.IsAccepted(submission.Result) {
@@ -98,8 +103,30 @@ func analyzeSubmissions(submissions *[]data.Submission) {
   }
 }
 
-func AddSubmissions (submissions *[]data.Submission) {
-  analyzeSubmissions(submissions)
-  calcRanks()
+func (r RankInfo) AddSubmissions (submissions *[]data.Submission) {
+  r.analyzeSubmissions(submissions)
+  r.calcRanks()
 }
 
+func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemStatusSummary) {
+  userRowRef := &r.RankData.UserRows[r.RankData.UserMap[userId]]
+  summary = make([]problemStatusSummary, len(r.RankData.ProblemMap))
+  idx := 0
+  for key, val := range r.RankData.ProblemMap {
+    summary[idx].ProblemId = key
+    summary[idx].Accepted = userRowRef.ProblemStatuses[val].Accepted
+  }
+
+  return
+}
+
+func (r RankInfo) GetUserSummary(userId uint) (summary *UserRankSummary) {
+  summary = &UserRankSummary{}
+
+  userRowRef := &r.RankData.UserRows[r.RankData.UserMap[userId]]
+  summary.UserId = userId
+  summary.AcceptedCnt = userRowRef.AcceptedCnt
+  summary.Rank = userRowRef.Rank
+  summary.ProblemStatus = r.GetUserProblemStatusSummary(userId)
+  return
+}
