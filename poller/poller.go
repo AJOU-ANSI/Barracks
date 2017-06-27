@@ -9,6 +9,7 @@ import (
     "Barracks/data"
     "github.com/jinzhu/gorm"
     "bytes"
+    "fmt"
 )
 
 
@@ -18,6 +19,10 @@ func StartPoll(db *gorm.DB, rankInfo *rank.RankInfo, tickDuraion *time.Duration,
     lastId := uint(0)
     var submissions []data.Submission
     go func() {
+        pushUrl := "http://127.0.0.1/api/" + contest.Name + "/submissions/checked"
+        client := &http.Client{
+            Timeout: time.Second * 10,
+        }
         loop:
         for {
             select {
@@ -49,8 +54,10 @@ func StartPoll(db *gorm.DB, rankInfo *rank.RankInfo, tickDuraion *time.Duration,
                         if err != nil {
                             panic(err)
                         }
-                        http.Post("http://127.0.0.1:8080/api/"+contest.Name+"/submissions/checked", "application/json",
-                        bytes.NewReader(jsonValue))
+                        _, err = client.Post(pushUrl, "application/json",bytes.NewReader(jsonValue))
+                        if err != nil {
+                            fmt.Println(err)
+                        }
                     }
                 }
             case <-*doneChan:

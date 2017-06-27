@@ -67,5 +67,5 @@ func main() {
     rankInfo := rank.NewRankInfo(&contest, &users, &problems)
 
     poller.StartPoll(db, rankInfo, &tickDuration, &contest, &doneChan)
-    httpserver.StartServer(&contest, uint(*portPtr))
+    httpserver.StartServer(rankInfo, uint(*portPtr))
 }
