@@ -19,7 +19,7 @@ func StartPoll(db *gorm.DB, rankInfo *rank.RankInfo, tickDuraion *time.Duration,
     lastId := uint(0)
     var submissions []data.Submission
     go func() {
-        pushUrl := "http://127.0.0.1/api/" + contest.Name + "/submissions/checked"
+        pushUrl := "https://shake2017.xyz/api/" + contest.Name + "/submissions/checked"
         client := &http.Client{
             Timeout: time.Second * 10,
         }
