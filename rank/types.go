@@ -8,6 +8,7 @@ import (
 type problemStatusSummary struct {
   ProblemId uint `json:"problemId"`
   Accepted  bool `json:"accepted"`
+  Wrong     bool `json:"wrong"`
 }
 
 type UserRankSummary struct {

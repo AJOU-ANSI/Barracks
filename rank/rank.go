@@ -114,12 +114,15 @@ func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemSt
     summary = nil
     return
   }
+
   userRowRef := &r.RankData.UserRows[mappedId]
   summary = make([]problemStatusSummary, len(r.RankData.ProblemMap))
   idx := 0
+
   for key, val := range r.RankData.ProblemMap {
     summary[idx].ProblemId = key
     summary[idx].Accepted = userRowRef.ProblemStatuses[val].Accepted
+    summary[idx].Wrong = !summary[idx].Accepted && userRowRef.ProblemStatuses[val].WrongCount > 0
     idx++
   }
 

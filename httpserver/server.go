@@ -30,7 +30,7 @@ func StartServer(rankInfo *rank.RankInfo, port uint) {
       return ctx.NoContent(http.StatusNotFound)
     }
 
-    r := rankInfo.GetUserSummary(uint(userId))
+    r := rankInfo.GetUserProblemStatusSummary(uint(userId))
     if r == nil {
       return ctx.NoContent(http.StatusNotFound)
     }
