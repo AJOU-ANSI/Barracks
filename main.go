@@ -1,71 +1,40 @@
 package main
 
 import (
-    "Barracks/data"
-    "Barracks/httpserver"
-    "Barracks/poller"
-    "Barracks/rank"
-    "Barracks/service"
-    "bufio"
-    "fmt"
-    "github.com/jinzhu/gorm"
-    _ "github.com/jinzhu/gorm/dialects/mysql"
-    "os"
-    "strings"
-    "time"
-    "flag"
+	"Barracks/data"
+	"Barracks/httpserver"
+	"Barracks/poller"
+	"Barracks/rank"
+	"Barracks/service"
+	"flag"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"os"
 )
 
-var db *gorm.DB
-
-func init() {
-
-}
-
-func askContestName() (contestName string) {
-    reader := bufio.NewReader(os.Stdin)
-    fmt.Print("Enter contest name: ")
-    contestName, _ = reader.ReadString('\n')
-    contestName = strings.Trim(contestName, "\n ")
-
-    fmt.Printf("[%s]에 대한 랭킹 계산을 시작합니다.\n", contestName)
-
-    return
-}
-
 func main() {
-    contestNamePtr := flag.String("contest", "", "contest name")
-    portPtr := flag.Int("port", 8080, "port number")
-    flag.Parse()
+	contestNamePtr := flag.String("contest", "", "contest name")
+	portPtr := flag.Int("port", 8080, "port number")
+	pushHostPtr := flag.String("pushHost", "", "host domain to push submission info")
 
+	flag.Parse()
 
-    if *contestNamePtr == "" {
-        flag.PrintDefaults()
-        os.Exit(1)
-    }
+	if *contestNamePtr == "" || *pushHostPtr == "" {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
 
-    var err error
+	db := data.InitDB()
+	defer db.Close()
 
-    db, err = gorm.Open("mysql", data.DbConfig)
+	contestName := *contestNamePtr
 
-    if err != nil {
-        panic(err)
-    }
+	contest := service.SelectContestByName(db, &contestName)
+	users := service.SelectNormalUsersByContest(db, &contest)
+	problems := service.SelectProblemsByContest(db, &contest)
 
-    db.LogMode(true)
+	doneChan := make(chan bool)
+	rankInfo := rank.NewRankInfo(&contest, &users, &problems)
 
-    defer db.Close()
-
-    contestName := *contestNamePtr
-
-    contest := service.SelectContestByName(db, &contestName)
-    users := service.SelectNormalUsersByContest(db, &contest)
-    problems := service.SelectProblemsByContest(db, &contest)
-
-    tickDuration := 5 * time.Second
-    doneChan := make(chan bool)
-    rankInfo := rank.NewRankInfo(&contest, &users, &problems)
-
-    poller.StartPoll(db, rankInfo, &tickDuration, &contest, &doneChan)
-    httpserver.StartServer(rankInfo, uint(*portPtr))
+	poller.StartPoll(db, rankInfo, &contest, &doneChan, pushHostPtr)
+	httpserver.StartServer(rankInfo, uint(*portPtr))
 }

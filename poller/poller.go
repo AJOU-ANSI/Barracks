@@ -12,17 +12,24 @@ import (
     "fmt"
 )
 
-
-func StartPoll(db *gorm.DB, rankInfo *rank.RankInfo, tickDuraion *time.Duration, contest *data.Contest, doneChan *chan bool) {
-    tickerChan := time.NewTicker(*tickDuraion).C
+func StartPoll(
+  db *gorm.DB,
+  rankInfo *rank.RankInfo,
+  contest *data.Contest,
+  doneChan *chan bool,
+  pushHost *string,
+) {
+  tickDuration := 5 * time.Second
+  tickerChan := time.NewTicker(tickDuration).C
 
     lastId := uint(0)
     var submissions []data.Submission
     go func() {
-        pushUrl := "https://shake2017.xyz/api/" + contest.Name + "/submissions/checked"
+        pushUrl := *pushHost + "/api/" + contest.Name + "/submissions/checked"
         client := &http.Client{
             Timeout: time.Second * 10,
         }
+
         loop:
         for {
             select {

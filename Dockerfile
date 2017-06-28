@@ -1,15 +1,13 @@
-FROM golang:latest
+FROM alpine:latest
 
-RUN go get -u github.com/golang/dep/cmd/dep
+ENV APPDIR /root/app
+ENV PORT 8080
 
-RUN mkdir -p /go/src/Barracks
+RUN mkdir -p $APPDIR
 
-WORKDIR /go/src/Barracks
+WORKDIR $APPDIR
 
-COPY . .
+COPY main $APPDIR/
+COPY entrypoint.sh /
 
-RUN dep ensure
-
-RUN go build main.go
-
-CMD ['./main', '-contest', 'shake16open']
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
