@@ -11,7 +11,7 @@ func InitDB () (db *gorm.DB){
     panic(err)
   }
 
-  db.LogMode(true)
+  //db.LogMode(true)
 
   return
 }

@@ -120,9 +120,12 @@ func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemSt
   idx := 0
 
   for key, val := range r.RankData.ProblemMap {
-    summary[idx].ProblemId = key
-    summary[idx].Accepted = userRowRef.ProblemStatuses[val].Accepted
-    summary[idx].Wrong = !summary[idx].Accepted && userRowRef.ProblemStatuses[val].WrongCount > 0
+    summary[idx] = problemStatusSummary{
+      ProblemId: key,
+      Accepted: userRowRef.ProblemStatuses[val].Accepted,
+      Wrong: !summary[idx].Accepted && userRowRef.ProblemStatuses[val].WrongCount > 0,
+    }
+
     idx++
   }
 
@@ -130,16 +133,23 @@ func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemSt
 }
 
 func (r RankInfo) GetUserSummary(userId uint) (summary *UserRankSummary) {
-  summary = &UserRankSummary{}
   mappedId, ok := r.RankData.UserMap[userId]
   if !ok {
     summary = nil
     return
   }
+
   userRowRef := &r.RankData.UserRows[mappedId]
-  summary.UserId = userId
-  summary.AcceptedCnt = userRowRef.AcceptedCnt
-  summary.Rank = userRowRef.Rank
-  summary.ProblemStatus = r.GetUserProblemStatusSummary(userId)
+  summary = &UserRankSummary{
+    UserId: userId,
+    AcceptedCnt: userRowRef.AcceptedCnt,
+    Rank: userRowRef.Rank,
+    ProblemStatus: r.GetUserProblemStatusSummary(userId),
+  }
+
   return
+}
+
+func (r RankInfo) GetRanking () (summary *[]userRow) {
+  return &r.RankData.UserRows
 }

@@ -12,23 +12,23 @@ type problemStatusSummary struct {
 }
 
 type UserRankSummary struct {
-  UserId uint `json:"userId"`
-  Rank uint `json:"rank"`
-  AcceptedCnt uint `json:"acceptedCnt"`
-  ProblemStatus []problemStatusSummary `json:"problemStatus,omitempty"`
+  UserId uint                           `json:"userId"`
+  Rank uint                             `json:"rank"`
+  AcceptedCnt uint                      `json:"acceptedCnt"`
+  ProblemStatus []problemStatusSummary  `json:"problemStatus,omitempty"`
 }
 
 type problemStatus struct {
-  WrongCount      uint
-  Status          string
-  Accepted        bool
+  WrongCount      uint              `json:"wrongCnt"`
+  Status          string            `json:"status"`
+  Accepted        bool              `json:"accepted"`
 }
 
 type userRow struct {
-  Rank            uint
-  StrId           string
-  AcceptedCnt     uint
-  Penalty         time.Duration
+  Rank            uint              `json:"rank"`
+  StrId           string            `json:"strId"`
+  AcceptedCnt     uint              `json:"acceptedCnt"`
+  Penalty         time.Duration     `json:"penalty"`
   ProblemStatuses []problemStatus
 }
 
