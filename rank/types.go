@@ -27,6 +27,7 @@ type problemStatus struct {
 type userRow struct {
   Rank            uint              `json:"rank"`
   StrId           string            `json:"strId"`
+  ID              uint              `json:"id"`
   AcceptedCnt     uint              `json:"acceptedCnt"`
   Penalty         time.Duration     `json:"penalty"`
   ProblemStatuses []problemStatus

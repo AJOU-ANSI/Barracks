@@ -11,10 +11,13 @@ type RankInfo struct {
   RankHeap *rankHeap
 }
 
-func newUserRow (user *data.User, problems *[]data.Problem) (userRow userRow) {
-  userRow.Rank = 1
-  userRow.StrId = (*user).StrId
-  userRow.ProblemStatuses = make([]problemStatus, len(*problems))
+func newUserRow (user *data.User, problems *[]data.Problem) (u userRow) {
+  u = userRow{
+    Rank: 1,
+    StrId: (*user).StrId,
+    ID: (*user).ID,
+    ProblemStatuses: make([]problemStatus, len(*problems)),
+  }
 
   return
 }

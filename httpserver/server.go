@@ -5,13 +5,26 @@ import (
   "strconv"
   "net/http"
   "Barracks/rank"
-  "github.com/labstack/echo/middleware"
+  //"github.com/labstack/echo/middleware"
 )
 
 func StartServer(rankInfo *rank.RankInfo, port uint) {
   e := echo.New()
 
-  e.Use(middleware.Logger())
+  //e.Use(middleware.Logger())
+
+  e.GET("/api/:contestName/ranking", func(ctx echo.Context) error {
+    if rankInfo.RankData.ContestInfo.Name != ctx.Param("contestName") {
+      return ctx.NoContent(http.StatusNotFound)
+    }
+
+    r := rankInfo.GetRanking()
+    if r == nil {
+      return ctx.NoContent(http.StatusNotFound)
+    }
+
+    return ctx.JSON(http.StatusOK, r)
+  })
 
   e.GET("/api/acceptedCnts/:userId", func(ctx echo.Context) error {
     userId, err := strconv.Atoi(ctx.Param("userId"))
@@ -40,14 +53,7 @@ func StartServer(rankInfo *rank.RankInfo, port uint) {
     return ctx.JSON(http.StatusOK, r)
   })
 
-  e.GET("/api/ranking", func(ctx echo.Context) error {
-    r := rankInfo.GetRanking()
-    if r == nil {
-      return ctx.NoContent(http.StatusNotFound)
-    }
 
-    return ctx.JSON(http.StatusOK, r)
-  })
 
   e.Logger.Fatal(e.Start(":"+strconv.Itoa(int(port))))
 }
