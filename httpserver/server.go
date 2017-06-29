@@ -41,7 +41,12 @@ func StartServer(rankInfo *rank.RankInfo, port uint) {
   })
 
   e.GET("/api/ranking", func(ctx echo.Context) error {
-    return ctx.JSON(http.StatusOK)
+    r := rankInfo.GetRanking()
+    if r == nil {
+      return ctx.NoContent(http.StatusNotFound)
+    }
+
+    return ctx.JSON(http.StatusOK, r)
   })
 
   e.Logger.Fatal(e.Start(":"+strconv.Itoa(int(port))))
