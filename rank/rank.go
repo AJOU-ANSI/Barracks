@@ -4,6 +4,7 @@ import (
   "time"
   "Barracks/data"
   "container/heap"
+  "fmt"
 )
 
 type RankInfo struct {
@@ -74,11 +75,11 @@ func (r RankInfo) calcRanks() {
   }
 }
 
-func (r RankInfo) analyzeSubmissions(submissions *[]data.Submission) {
+func (r RankInfo) analyzeSubmissions(submissions []data.Submission) {
   contestInfo := r.RankData.ContestInfo
 
   // 각각의 제출에 대하여
-  for _, submission := range *submissions {
+  for _, submission := range submissions {
     // userRow와 problemStatus를 구한다.
 
     if _, ok := r.RankData.UserMap[submission.UserID]; !ok {
@@ -90,9 +91,11 @@ func (r RankInfo) analyzeSubmissions(submissions *[]data.Submission) {
 
     // 만약 제출이 정답 소스코드라면
     if data.IsAccepted(submission.Result) {
-
+      fmt.Println("testlog", "Hello")
       // 문제가 맞지 않은 상황이라면
       if !problemStatus.Accepted {
+        fmt.Println("testlog", "Accepted!")
+
         penalty := submission.CreatedAt.Sub(contestInfo.Start) + time.Duration(problemStatus.WrongCount) * 20 * time.Minute
 
         (*userRow).Penalty += penalty
@@ -106,7 +109,7 @@ func (r RankInfo) analyzeSubmissions(submissions *[]data.Submission) {
   }
 }
 
-func (r RankInfo) AddSubmissions (submissions *[]data.Submission) {
+func (r RankInfo) AddSubmissions (submissions []data.Submission) {
   r.analyzeSubmissions(submissions)
   r.calcRanks()
 }
@@ -153,6 +156,6 @@ func (r RankInfo) GetUserSummary(userId uint) (summary *UserRankSummary) {
   return
 }
 
-func (r RankInfo) GetRanking () (summary *[]userRow) {
-  return &r.RankData.UserRows
+func (r RankInfo) GetRanking () (summary []userRow) {
+  return r.RankData.UserRows
 }

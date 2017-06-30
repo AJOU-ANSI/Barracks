@@ -12,7 +12,7 @@ func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint
   var lastSubmission data.Submission
 
   db.Last(&lastSubmission)
-  db.Where("ContestId = ? AND result = ? AND id <= ?", contest.ID, 0, lastSubmission.ID).First(&firstPendingSubmission)
+  db.Where("ContestId = ? AND result < 4 AND id <= ?", contest.ID, lastSubmission.ID).First(&firstPendingSubmission)
 
   fmt.Println(firstPendingSubmission.ID)
   fmt.Println(lastSubmission.ID)

@@ -19,58 +19,54 @@ func StartPoll(
   doneChan *chan bool,
   pushHost *string,
 ) {
-  tickDuration := 5 * time.Second
-  tickerChan := time.NewTicker(tickDuration).C
 
   lastId := uint(0)
   var submissions []data.Submission
+
+  pushUrl := *pushHost + "/api/" + contest.Name + "/submissions/checked"
+  client := &http.Client{
+    Timeout: time.Second * 10,
+  }
+
   go func() {
-    pushUrl := *pushHost + "/api/" + contest.Name + "/submissions/checked"
-    client := &http.Client{
-      Timeout: time.Second * 10,
-    }
-
-  loop:
     for {
-      select {
-      case <-tickerChan:
-        submissions = service.SelectNotCheckedSubmissions(db, contest, lastId)
+      submissions = service.SelectNotCheckedSubmissions(db, contest, lastId)
 
-        submissionsLen := len(submissions)
+      submissionsLen := len(submissions)
 
-        // set last not pending submissions
-        if submissionsLen > 0 {
-          lastId = submissions[submissionsLen-1].ID
-          rankInfo.AddSubmissions(&submissions)
+      // set last not pending submissions
+      if submissionsLen > 0 {
+        lastId = submissions[submissionsLen-1].ID
+        rankInfo.AddSubmissions(submissions)
 
-          changes := make(map[uint]bool)
-          var ret struct {
-            Results []rank.UserRankSummary `json:"results"`
-          }
-          for _, sub := range submissions {
-            if _, ok := rankInfo.RankData.UserMap[sub.UserID]; ok {
-              if _, present := changes[sub.UserID]; !present {
-                changes[sub.UserID] = true
-                sum := rankInfo.GetUserSummary(sub.UserID)
-                ret.Results = append(ret.Results, *sum)
-              }
-            }
-          }
-          if len(changes) > 0 {
-            jsonValue, err := json.Marshal(ret)
-            if err != nil {
-              panic(err)
-            }
-            _, err = client.Post(pushUrl, "application/json", bytes.NewReader(jsonValue))
-            if err != nil {
-              fmt.Println(err)
+        changes := make(map[uint]bool)
+        var ret struct {
+          Results []rank.UserRankSummary `json:"results"`
+        }
+        for _, sub := range submissions {
+          if _, ok := rankInfo.RankData.UserMap[sub.UserID]; ok {
+            if _, present := changes[sub.UserID]; !present {
+              changes[sub.UserID] = true
+              sum := rankInfo.GetUserSummary(sub.UserID)
+              ret.Results = append(ret.Results, *sum)
             }
           }
         }
-      case <-*doneChan:
-        *doneChan <- true
-        break loop
+        if len(changes) > 0 {
+          jsonValue, err := json.Marshal(ret)
+          if err != nil {
+            panic(err)
+          }
+          _, err = client.Post(pushUrl, "application/json", bytes.NewReader(jsonValue))
+          if err != nil {
+            fmt.Println(err)
+          }
+        }
       }
+
+      time.Sleep(time.Second * 5)
     }
+
   }()
+
 }
