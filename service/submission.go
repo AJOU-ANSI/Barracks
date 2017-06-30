@@ -3,6 +3,7 @@ package service
 import (
   "github.com/jinzhu/gorm"
   "Barracks/data"
+  "fmt"
 )
 
 func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint) []data.Submission {
@@ -12,6 +13,9 @@ func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint
 
   db.Last(&lastSubmission)
   db.Where("ContestId = ? AND result = ? AND id <= ?", contest.ID, 0, lastSubmission.ID).First(&firstPendingSubmission)
+
+  fmt.Println(firstPendingSubmission.ID)
+  fmt.Println(lastSubmission.ID)
 
   var targetId uint
 
