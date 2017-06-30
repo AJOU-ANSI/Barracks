@@ -5,7 +5,7 @@ import (
   "Barracks/data"
 )
 
-func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint) (submissions []data.Submission){
+func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint) []data.Submission {
   // find first pending submission
   var firstPendingSubmission data.Submission
   var lastSubmission data.Submission
@@ -21,10 +21,24 @@ func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint
     targetId = lastSubmission.ID
   }
 
+  var submissions []data.Submission
   if lastId < targetId {
     db.Where("ContestId = ? AND id > ? AND id <= ?", contest.ID, lastId, targetId).Find(&submissions)
   }
 
+  freezeAt := SelectContestFreezeById(db, contest.ID)
 
-  return
+  if freezeAt.IsZero() {
+    return submissions
+  }
+
+  var filteredSubmissions []data.Submission
+
+  for _, submission := range submissions {
+    if submission.CreatedAt.Before(freezeAt) {
+      filteredSubmissions = append(filteredSubmissions, submission)
+    }
+  }
+
+  return filteredSubmissions
 }
