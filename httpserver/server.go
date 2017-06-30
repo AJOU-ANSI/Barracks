@@ -18,9 +18,15 @@ func StartServer(rankInfo *rank.RankInfo, rankInfoFreeze *rank.RankInfo, port ui
       return ctx.NoContent(http.StatusNotFound)
     }
 
-    r := rankInfoFreeze.GetRanking()
-    if r == nil {
-      return ctx.NoContent(http.StatusNotFound)
+    //r := rankInfoFreeze.GetRanking()
+    //if r == nil {
+    //  return ctx.NoContent(http.StatusNotFound)
+    //}
+
+    var r []rank.UserRankSummary
+
+    for k := range rankInfoFreeze.RankData.UserMap {
+      r = append(r, *rankInfoFreeze.GetUserSummary(uint(k)))
     }
 
     return ctx.JSON(http.StatusOK, r)
@@ -54,8 +60,6 @@ func StartServer(rankInfo *rank.RankInfo, rankInfoFreeze *rank.RankInfo, port ui
     }
     return ctx.JSON(http.StatusOK, r)
   })
-
-
 
   e.Logger.Fatal(e.Start(":"+strconv.Itoa(int(port))))
 }

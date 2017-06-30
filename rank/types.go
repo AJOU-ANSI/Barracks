@@ -7,11 +7,14 @@ import (
 
 type problemStatusSummary struct {
   ProblemId uint `json:"problemId"`
+  ProblemCode string `json:"problemCode"`
   Accepted  bool `json:"accepted"`
   Wrong     bool `json:"wrong"`
 }
 
 type UserRankSummary struct {
+  StrId string                          `json:"strId"`
+  Penalty         time.Duration         `json:"penalty"`
   UserId uint                           `json:"userId"`
   Rank uint                             `json:"rank"`
   AcceptedCnt uint                      `json:"acceptedCnt"`
@@ -39,6 +42,7 @@ type rankData struct {
   ContestInfo *data.Contest
   UserMap     map[uint]uint
   ProblemMap  map[uint]uint
+  ProblemCodeMap map[uint]string
 }
 
 type rankNode struct {

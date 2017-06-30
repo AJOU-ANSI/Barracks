@@ -30,10 +30,12 @@ func newRankData (contest *data.Contest, users *[]data.User, problems *[]data.Pr
     UserRows: make([]userRow, len(*users)),
     UserMap: make(map[uint]uint),
     ProblemMap: make(map[uint]uint),
+    ProblemCodeMap: make(map[uint]string),
   }
 
   for index, problem := range *problems {
     r.ProblemMap[problem.ID] = uint(index)
+    r.ProblemCodeMap[problem.ID] = problem.Code
   }
 
   for index, user := range *users {
@@ -125,6 +127,7 @@ func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemSt
 
   for key, val := range r.RankData.ProblemMap {
     summary[idx] = problemStatusSummary{
+      ProblemCode: r.RankData.ProblemCodeMap[key],
       ProblemId: key,
       Accepted: userRowRef.ProblemStatuses[val].Accepted,
       Wrong: !summary[idx].Accepted && userRowRef.ProblemStatuses[val].WrongCount > 0,
@@ -145,6 +148,8 @@ func (r RankInfo) GetUserSummary(userId uint) (summary *UserRankSummary) {
 
   userRowRef := &r.RankData.UserRows[mappedId]
   summary = &UserRankSummary{
+    Penalty: userRowRef.Penalty,
+    StrId: userRowRef.StrId,
     UserId: userId,
     AcceptedCnt: userRowRef.AcceptedCnt,
     Rank: userRowRef.Rank,
