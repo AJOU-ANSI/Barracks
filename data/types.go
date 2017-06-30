@@ -6,6 +6,7 @@ type Contest struct {
   ID          uint        `gorm:"column:id;primary_key"`
   Name        string
 
+  FreezeAt    time.Time   `gorm:"column:freezeAt"`
   Start       time.Time
   End         time.Time
 }
