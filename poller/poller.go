@@ -34,13 +34,6 @@ func StartPoll(
     for {
       select {
       case <-tickerChan:
-        freezeAt := service.SelectContestFreezeById(db, contest.ID)
-
-        if !freezeAt.IsZero() && time.Now().After(freezeAt) {
-          continue
-        }
-
-
         submissions = service.SelectNotCheckedSubmissions(db, contest, lastId)
 
         submissionsLen := len(submissions)
