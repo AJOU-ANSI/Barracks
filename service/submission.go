@@ -28,7 +28,7 @@ func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint
 
   freezeAt := SelectContestFreezeById(db, contest.ID)
 
-  if !freezeAt.IsZero() {
+  if freezeAt.IsZero() {
     return submissions
   }
 
