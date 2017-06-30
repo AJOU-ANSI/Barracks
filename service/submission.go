@@ -26,19 +26,21 @@ func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint
     db.Where("ContestId = ? AND id > ? AND id <= ?", contest.ID, lastId, targetId).Find(&submissions)
   }
 
-  freezeAt := SelectContestFreezeById(db, contest.ID)
-
-  if freezeAt.IsZero() {
-    return submissions
-  }
-
-  var filteredSubmissions []data.Submission
-
-  for _, submission := range submissions {
-    if submission.CreatedAt.Before(freezeAt) {
-      filteredSubmissions = append(filteredSubmissions, submission)
-    }
-  }
-
-  return filteredSubmissions
+  return submissions
+  //
+  //freezeAt := SelectContestFreezeById(db, contest.ID)
+  //
+  //if freezeAt.IsZero() {
+  //  return submissions
+  //}
+  //
+  //var filteredSubmissions []data.Submission
+  //
+  //for _, submission := range submissions {
+  //  if submission.CreatedAt.Before(freezeAt) {
+  //    filteredSubmissions = append(filteredSubmissions, submission)
+  //  }
+  //}
+  //
+  //return filteredSubmissions
 }
