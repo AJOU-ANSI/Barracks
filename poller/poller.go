@@ -15,6 +15,7 @@ import (
 func StartPoll(
   db *gorm.DB,
   rankInfo *rank.RankInfo,
+  rankInfoFreeze *rank.RankInfo,
   contest *data.Contest,
   doneChan *chan bool,
   pushHost *string,
@@ -32,12 +33,31 @@ func StartPoll(
     for {
       submissions = service.SelectNotCheckedSubmissions(db, contest, lastId)
 
+
       submissionsLen := len(submissions)
 
       // set last not pending submissions
       if submissionsLen > 0 {
         lastId = submissions[submissionsLen-1].ID
         rankInfo.AddSubmissions(submissions)
+
+        {
+          freezeAt := service.SelectContestFreezeById(db, contest.ID)
+
+          if !freezeAt.IsZero() {
+            var filteredSubmissions []data.Submission
+
+            for _, submission := range submissions {
+              if submission.CreatedAt.Before(freezeAt) {
+                filteredSubmissions = append(filteredSubmissions, submission)
+              }
+            }
+
+            rankInfoFreeze.AddSubmissions(filteredSubmissions)
+          } else {
+            rankInfoFreeze.AddSubmissions(submissions)
+          }
+        }
 
         changes := make(map[uint]bool)
         var ret struct {

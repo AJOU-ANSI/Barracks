@@ -8,17 +8,17 @@ import (
   //"github.com/labstack/echo/middleware"
 )
 
-func StartServer(rankInfo *rank.RankInfo, port uint) {
+func StartServer(rankInfo *rank.RankInfo, rankInfoFreeze *rank.RankInfo, port uint) {
   e := echo.New()
 
   //e.Use(middleware.Logger())
 
   e.GET("/api/:contestName/ranking", func(ctx echo.Context) error {
-    if rankInfo.RankData.ContestInfo.Name != ctx.Param("contestName") {
+    if rankInfoFreeze.RankData.ContestInfo.Name != ctx.Param("contestName") {
       return ctx.NoContent(http.StatusNotFound)
     }
 
-    r := rankInfo.GetRanking()
+    r := rankInfoFreeze.GetRanking()
     if r == nil {
       return ctx.NoContent(http.StatusNotFound)
     }

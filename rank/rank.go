@@ -4,7 +4,6 @@ import (
   "time"
   "Barracks/data"
   "container/heap"
-  "fmt"
 )
 
 type RankInfo struct {
@@ -91,11 +90,8 @@ func (r RankInfo) analyzeSubmissions(submissions []data.Submission) {
 
     // 만약 제출이 정답 소스코드라면
     if data.IsAccepted(submission.Result) {
-      fmt.Println("testlog", "Hello")
       // 문제가 맞지 않은 상황이라면
       if !problemStatus.Accepted {
-        fmt.Println("testlog", "Accepted!")
-
         penalty := submission.CreatedAt.Sub(contestInfo.Start) + time.Duration(problemStatus.WrongCount) * 20 * time.Minute
 
         (*userRow).Penalty += penalty

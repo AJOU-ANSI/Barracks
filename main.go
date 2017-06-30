@@ -33,8 +33,10 @@ func main() {
 	problems := service.SelectProblemsByContest(db, &contest)
 
 	doneChan := make(chan bool)
-	rankInfo := rank.NewRankInfo(&contest, &users, &problems)
 
-	poller.StartPoll(db, rankInfo, &contest, &doneChan, pushHostPtr)
-	httpserver.StartServer(rankInfo, uint(*portPtr))
+	rankInfo := rank.NewRankInfo(&contest, &users, &problems)
+	rankInfoFreezed := rank.NewRankInfo(&contest, &users, &problems)
+
+	poller.StartPoll(db, rankInfo, rankInfoFreezed, &contest, &doneChan, pushHostPtr)
+	httpserver.StartServer(rankInfo, rankInfoFreezed, uint(*portPtr))
 }
