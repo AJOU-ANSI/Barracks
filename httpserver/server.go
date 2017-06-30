@@ -55,5 +55,5 @@ func StartServer(rankInfo *rank.RankInfo, port uint) {
 
 
 
-  e.Logger.Fatal(e.Start("0.0.0.0:"+strconv.Itoa(int(port))))
+  e.Logger.Fatal(e.Start(":"+strconv.Itoa(int(port))))
 }

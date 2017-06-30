@@ -104,7 +104,9 @@ func (r RankInfo) analyzeSubmissions(submissions []data.Submission) {
       }
 
     } else { // 제출이 틀린 소스코드라면
-      (*problemStatus).WrongCount++
+      if !problemStatus.Accepted {
+        (*problemStatus).WrongCount++
+      }
     }
   }
 }
