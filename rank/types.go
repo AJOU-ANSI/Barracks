@@ -13,7 +13,7 @@ type problemStatusSummary struct {
 }
 
 type UserRankSummary struct {
-  LastSubId uint                        `json:"subId"`
+  LastSubId uint                        `json:"lastSubId"`
   StrId string                          `json:"strId"`
   Penalty         time.Duration         `json:"penalty"`
   UserId uint                           `json:"userId"`
