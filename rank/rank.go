@@ -139,7 +139,7 @@ func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemSt
   return
 }
 
-func (r RankInfo) GetUserSummary(userId uint) (summary *UserRankSummary) {
+func (r RankInfo) GetUserSummary(userId uint, subId uint) (summary *UserRankSummary) {
   mappedId, ok := r.RankData.UserMap[userId]
   if !ok {
     summary = nil
@@ -148,6 +148,7 @@ func (r RankInfo) GetUserSummary(userId uint) (summary *UserRankSummary) {
 
   userRowRef := &r.RankData.UserRows[mappedId]
   summary = &UserRankSummary{
+    LastSubId: subId,
     Penalty: userRowRef.Penalty,
     StrId: userRowRef.StrId,
     UserId: userId,

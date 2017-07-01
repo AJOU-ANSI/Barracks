@@ -26,7 +26,7 @@ func StartServer(rankInfo *rank.RankInfo, rankInfoFreeze *rank.RankInfo, port ui
     var r []rank.UserRankSummary
 
     for k := range rankInfoFreeze.RankData.UserMap {
-      r = append(r, *rankInfoFreeze.GetUserSummary(uint(k)))
+      r = append(r, *rankInfoFreeze.GetUserSummary(uint(k), 0))
     }
 
     return ctx.JSON(http.StatusOK, r)
@@ -39,13 +39,13 @@ func StartServer(rankInfo *rank.RankInfo, rankInfoFreeze *rank.RankInfo, port ui
       return ctx.NoContent(http.StatusNotFound)
     }
 
-    r := rankInfo.GetUserSummary(uint(userId))
+    r := rankInfo.GetUserSummary(uint(userId), 0)
 
     if r == nil {
       return ctx.NoContent(http.StatusNotFound)
     }
 
-    r.Rank = rankInfoFreeze.GetUserSummary(uint(userId)).Rank
+    r.Rank = rankInfoFreeze.GetUserSummary(uint(userId), 0).Rank
     return ctx.JSON(http.StatusOK, r)
   })
 

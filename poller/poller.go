@@ -67,7 +67,7 @@ func StartPoll(
           if _, ok := rankInfo.RankData.UserMap[sub.UserID]; ok {
             if _, present := changes[sub.UserID]; !present {
               changes[sub.UserID] = true
-              sum := rankInfoFreeze.GetUserSummary(sub.UserID)
+              sum := rankInfoFreeze.GetUserSummary(sub.UserID, sub.ID)
               ret.Results = append(ret.Results, *sum)
             }
           }
