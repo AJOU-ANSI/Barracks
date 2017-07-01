@@ -40,11 +40,12 @@ func StartServer(rankInfo *rank.RankInfo, rankInfoFreeze *rank.RankInfo, port ui
     }
 
     r := rankInfo.GetUserSummary(uint(userId))
-    r.Rank = rankInfoFreeze.GetUserSummary(uint(userId)).Rank
 
     if r == nil {
       return ctx.NoContent(http.StatusNotFound)
     }
+
+    r.Rank = rankInfoFreeze.GetUserSummary(uint(userId)).Rank
     return ctx.JSON(http.StatusOK, r)
   })
 
