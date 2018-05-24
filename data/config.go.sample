@@ -4,6 +4,6 @@ import (
   "os"
 )
 
-const (
+var (
   dbConfig = os.Getenv("DB")
 )
