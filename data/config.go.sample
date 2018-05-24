@@ -1,5 +1,9 @@
 package data
 
+import (
+  "os"
+)
+
 const (
-  dbConfig = ""
+  dbConfig = os.Getenv("DB")
 )
