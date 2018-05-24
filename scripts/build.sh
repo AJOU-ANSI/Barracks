@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 dep version || curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 dep ensure
