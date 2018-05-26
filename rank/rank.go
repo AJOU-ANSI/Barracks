@@ -9,6 +9,7 @@ import (
 type RankInfo struct {
   RankData *rankData
   RankHeap *rankHeap
+  Problems []data.Problem
 }
 
 func newUserRow (user *data.User, problems *[]data.Problem) (u userRow) {
@@ -53,6 +54,7 @@ func NewRankInfo (contest *data.Contest, users *[]data.User, problems *[]data.Pr
   r.RankHeap = &rankHeap{}
   heap.Init(r.RankHeap)
 
+  r.Problems = *problems
   return
 }
 
@@ -88,7 +90,8 @@ func (r RankInfo) analyzeSubmissions(submissions []data.Submission) {
     }
 
     userRow := &r.RankData.UserRows[r.RankData.UserMap[submission.UserID]]
-    problemStatus := &userRow.ProblemStatuses[r.RankData.ProblemMap[submission.ProblemID]]
+    problemIdx := r.RankData.ProblemMap[submission.ProblemID]
+    problemStatus := &userRow.ProblemStatuses[problemIdx]
 
     // 만약 제출이 정답 소스코드라면
     if data.IsAccepted(submission.Result) {
@@ -96,6 +99,7 @@ func (r RankInfo) analyzeSubmissions(submissions []data.Submission) {
       if !problemStatus.Accepted {
         penalty := submission.CreatedAt.Sub(contestInfo.Start) + time.Duration(problemStatus.WrongCount) * 20 * time.Minute
 
+        (*userRow).TotalScore += r.Problems[problemIdx].Score
         (*userRow).Penalty += penalty
         (*problemStatus).Accepted = true
         (*userRow).AcceptedCnt++
@@ -155,6 +159,7 @@ func (r RankInfo) GetUserSummary(userId uint, subId uint) (summary *UserRankSumm
     AcceptedCnt: userRowRef.AcceptedCnt,
     Rank: userRowRef.Rank,
     ProblemStatus: r.GetUserProblemStatusSummary(userId),
+    TotalScore: userRowRef.TotalScore,
   }
 
   return

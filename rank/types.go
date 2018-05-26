@@ -20,6 +20,7 @@ type UserRankSummary struct {
   Rank uint                             `json:"rank"`
   AcceptedCnt uint                      `json:"acceptedCnt"`
   ProblemStatus []problemStatusSummary  `json:"problemStatus,omitempty"`
+  TotalScore uint                       `json:"totalScore"`
 }
 
 type problemStatus struct {
@@ -35,6 +36,7 @@ type userRow struct {
   AcceptedCnt     uint              `json:"acceptedCnt"`
   Penalty         time.Duration     `json:"penalty"`
   ProblemStatuses []problemStatus
+  TotalScore uint                   `json:"totalScore"`
 }
 
 type rankData struct {

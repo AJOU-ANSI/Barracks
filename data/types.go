@@ -34,6 +34,7 @@ type Problem struct {
   Code        string      `gorm:"type:text"`
 
   ContestID   uint        `gorm:"column:ContestId"`
+  Score       uint        `gorm:"score"`
 }
 
 func (Problem) TableName() string {

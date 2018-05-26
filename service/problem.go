@@ -6,7 +6,7 @@ import (
 )
 
 func SelectProblemsByContest(db *gorm.DB, contest *data.Contest) (problems []data.Problem) {
-  db.Select("id, code, ContestId").Where(map[string]interface{}{"contestId": contest.ID}).Find(&problems)
+  db.Select("id, code, ContestId, score").Where(map[string]interface{}{"contestId": contest.ID}).Find(&problems)
 
   return
 }
