@@ -10,6 +10,7 @@ type problemStatusSummary struct {
   ProblemCode string `json:"problemCode"`
   Accepted  bool `json:"accepted"`
   Wrong     bool `json:"wrong"`
+  TotalScore uint `json:"totalScore"`
 }
 
 type UserRankSummary struct {
