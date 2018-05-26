@@ -51,7 +51,8 @@ type rankData struct {
 type rankNode struct {
   UserIndex     uint
   Penalty       time.Duration
-  AcceptedCnt   uint
+  //AcceptedCnt   uint
+  TotalScore    uint
 }
 
 type rankHeap []rankNode
@@ -61,11 +62,11 @@ func (h rankHeap) Len() int {
 }
 
 func (h rankHeap) Less(i, j int) bool {
-  if h[i].AcceptedCnt == h[j].AcceptedCnt {
+  if h[i].TotalScore == h[j].TotalScore {
     return h[i].Penalty < h[j].Penalty
   }
 
-  return h[i].AcceptedCnt > h[j].AcceptedCnt
+  return h[i].TotalScore > h[j].TotalScore
 }
 
 func (h rankHeap) Swap(i, j int) {

@@ -60,7 +60,7 @@ func NewRankInfo (contest *data.Contest, users *[]data.User, problems *[]data.Pr
 
 func (r RankInfo) calcRanks() {
   for index, userRow := range r.RankData.UserRows {
-    heap.Push(r.RankHeap, rankNode{Penalty: userRow.Penalty, AcceptedCnt: userRow.AcceptedCnt, UserIndex: uint(index)})
+    heap.Push(r.RankHeap, rankNode{Penalty: userRow.Penalty, UserIndex: uint(index), TotalScore: userRow.TotalScore})
   }
 
   rankValue := uint(1)
@@ -69,7 +69,7 @@ func (r RankInfo) calcRanks() {
   for r.RankHeap.Len() > 0 {
     popRankNode := rankNode(heap.Pop(r.RankHeap).(rankNode))
 
-    if beforeRankNode != nil && (beforeRankNode.AcceptedCnt != popRankNode.AcceptedCnt || beforeRankNode.Penalty != popRankNode.Penalty) {
+    if beforeRankNode != nil && (beforeRankNode.TotalScore != popRankNode.TotalScore || beforeRankNode.Penalty != popRankNode.Penalty) {
       rankValue++
     }
 
