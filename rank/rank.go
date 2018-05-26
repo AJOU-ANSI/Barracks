@@ -135,7 +135,7 @@ func (r RankInfo) GetUserProblemStatusSummary (userId uint) (summary []problemSt
       ProblemId: key,
       Accepted: userRowRef.ProblemStatuses[val].Accepted,
       Wrong: !summary[idx].Accepted && userRowRef.ProblemStatuses[val].WrongCount > 0,
-      Score: r.Problems[key].Score,
+      Score: r.Problems[r.RankData.ProblemMap[key]].Score,
     }
 
     idx++
