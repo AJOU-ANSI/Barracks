@@ -13,7 +13,7 @@ func SelectNotCheckedSubmissions(db *gorm.DB, contest *data.Contest, lastId uint
 	var lastSubmission data.Submission
 
 	// 마지막 제출을 찾는다
-	db.Last(&lastSubmission)
+	db.Where("ContestId = ?", contest.ID).Last(&lastSubmission)
 	// pending 중인 제출 중에서 첫 시작을 찾는다
 	db.Where("ContestId = ? AND result < 4 AND id <= ?", contest.ID, lastSubmission.ID).First(&firstPendingSubmission)
 
